@@ -38,4 +38,8 @@ Next, use conda to setup your current environment that this script is developed 
 
 <pre> <code>conda env create -f environment.yml</code> </pre>
 
-<pre> <code> conda activate base </code> </pre>
+<pre> <code>conda activate base </code> </pre>
+
+One the above are done, you can run the GUI by typing:
+
+<pre> <code>python BPM_Test_GUI.py</code> </pre>
