@@ -24,4 +24,14 @@ A text editor will pop up, and add the following line to the end of the .bashrc 
 
 <pre> <code>source /afs/slac/g/lcls/tools/script/ENVS64.bash </code> </pre>
 
+You only have to do this once. 
+
+Then, clone this repository to your home directory: 
+
+<pre> <code> git clone  </code> </pre>
+
+Next, use conda to setup your current environment that this script is developed in. 
+
+<pre> <code>conda env create -f environment.yml</code> </pre>
+
 
