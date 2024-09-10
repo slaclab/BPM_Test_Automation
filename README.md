@@ -3,7 +3,7 @@ Automated BPM Test Interface on lcls-dev3, featuring FRU programming, SNR &amp; 
 
 Once at SLAC, and SSH into lcls-dev3 using [moba-xterm](https://mobaxterm.mobatek.net/) or equivalent. Moba-Xterm is recommended because you can transfer files easily, and it is free. 
 
-<pre> <code>```bash ssh -XY lcls-dev3 ```</code> </pre>
+<pre> <code>ssh -XY lcls-dev3</code> </pre>
 
 In your home directory, clone this repository locally. 
 
