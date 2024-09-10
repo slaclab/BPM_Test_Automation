@@ -28,10 +28,14 @@ You only have to do this once.
 
 Then, clone this repository to your home directory: 
 
-<pre> <code> git clone  </code> </pre>
+<pre> <code> git clone  https://github.com/slaclab/BPM_Test_Automation.git </code> </pre>
+
+Once the cloning is finished, cd into this directory: 
+
+<pre> <code> cd BPM_Test_Automation </code> </pre>
 
 Next, use conda to setup your current environment that this script is developed in. 
 
 <pre> <code>conda env create -f environment.yml</code> </pre>
 
-
+<pre> <code> conda activate base </code> </pre>
