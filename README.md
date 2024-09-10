@@ -1,5 +1,5 @@
 # BPM_Test_Automation
-Automated BPM Test Interface on lcls-dev3, featuring FRU programming, SNR &amp; RF power test, attenuation linearity test, beam resolution, and calibration signal check. 
+Automated BPM Test Interface on lcls-dev3, featuring FRU programming, SNR &amp; RF power test, attenuation linearity test, beam resolution, and calibration signal check.  All of these features are encapsulated in a tkinter interface. 
 
 Once at SLAC, and SSH into lcls-dev3 using [moba-xterm](https://mobaxterm.mobatek.net/) or equivalent. Moba-Xterm is recommended because you can transfer files easily, and it is free. 
 
