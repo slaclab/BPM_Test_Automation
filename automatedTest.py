@@ -27,7 +27,7 @@ def SNR_Testing(Serial):
         match = re.search(file_pattern, last_line)
         extracted_file = match.group()
         print(extracted_file)
-        SCPcommand = f"scp -r laci@cpu-b34-bp01:/data/cpu-b34-bp01/bpm_data/{extracted_file} ./{Serial}_{extracted_file}"
+        SCPcommand = f"scp -r laci@cpu-b34-bp01:/data/cpu-b34-bp01/bpm_data/{extracted_file} /afs/slac/g/lcls/users/BPM/LCLS_II/Data/{Serial}_{extracted_file}"
         CPYresult = subprocess.run(SCPcommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         if CPYresult.returncode == 0:
             SNR_PWR_Test_Result = data_processing.calculate_SNR_PWR(Serial, extracted_file)
@@ -119,7 +119,7 @@ def attenuation_Testing(Serial):
     
     data_directory = "/afs/slac.stanford.edu/g/lcls/users/BPM/LCLS_II/Data"
     remote_file = f"laci@cpu-b34-bp01:/data/cpu-b34-bp01/bpm_data/attn_sweep_SN{Serial1}.txt"
-    local_directory = "."
+    local_directory = "/afs/slac/g/lcls/users/BPM/LCLS_II/Data"
     time.sleep(20)
     # Combine commands into a single string
     command = f"cd {data_directory} && scp -r {remote_file} {local_directory}"
