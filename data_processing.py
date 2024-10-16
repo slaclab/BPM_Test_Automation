@@ -14,7 +14,7 @@ import bin2mat
 def calculate_SNR_PWR(Serial, file):
     colors = ['Red', 'Yellow', 'Blue', 'Green']
     out = []
-    Data_directory = f'./{Serial}_{file}/'
+    Data_directory = f'/afs/slac/g/lcls/users/BPM/LCLS_II/Data/{Serial}_{file}/'
 
     for i in range(4, 8):  # MATLAB 4:7 is equivalent to Python range(4, 8)
         dir_name = datetime.now().strftime('%m_%d_%Y_%H%M%S')
