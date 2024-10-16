@@ -10,8 +10,6 @@ import time
 import numpy as np
 
 
-
-
 #This function tests the SNR and Power 
 def SNR_Testing(Serial):
     SNRcommand = "ssh laci@cpu-b34-bp01 'cd /afs/slac/g/lcls/users/BPM/LCLS_II/BPM/software/lcls2-py-scripts/ && ./launch.sh striplineTakeData.py -A0 -B0 -Y stripline_yaml/*_project.yaml/000TopLevel.yaml -D stripline_yaml/*_project.yaml/config/defaults_ss.yaml -b1 -n1 -d /data/cpu-b34-bp01/bpm_data/'"
@@ -31,6 +29,10 @@ def SNR_Testing(Serial):
         CPYresult = subprocess.run(SCPcommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         if CPYresult.returncode == 0:
             SNR_PWR_Test_Result = data_processing.calculate_SNR_PWR(Serial, extracted_file)
+            filename = f"/afs/slac/g/lcls/users/BPM/LCLS_II/Data/{Serial}_{extracted_file}/{Serial}_{extracted_file}.txt"
+            stringResult = str(SNR_PWR_Test_Result)
+            with open(filename, "w") as file:
+                 file.write(stringResult)
             return SNR_PWR_Test_Result
         else:
             print("Issue encountered copying files, check permissions or try re-logging into your server.")
@@ -113,16 +115,26 @@ def attenuation_Testing(Serial):
     ATTN_Output = []
     Serial1 = Serial
     filename = f"/data/cpu-b34-bp01/bpm_data/attn_sweep_SN{Serial}.txt"
-    ATTNcommand = f"ssh laci@cpu-b34-bp01 'cd /afs/slac/g/lcls/users/BPM/LCLS_II/BPM/software/lcls2-py-scripts/ && ./launch.sh attnsweep_test.py -b1 -s512 -n1 -d /data -Y stripline_yaml/*_project.yaml/000TopLevel.yaml -S {Serial1} 2>&1 | tee /data/cpu-b34-bp01/bpm_data/attn_sweep_SN{Serial1}.txt"
-    ATTNresult = subprocess.run(ATTNcommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    ATTNcommand = f"ssh laci@cpu-b34-bp01 'cd /afs/slac/g/lcls/users/BPM/LCLS_II/BPM/software/lcls2-py-scripts/ && ./launch.sh attnsweep_test.py -b1 -s512 -n1 -d /data -Y stripline_yaml/*_project.yaml/000TopLevel.yaml 2>&1 | tee /data/cpu-b34-bp01/bpm_data/attn_sweep_SN{Serial1}.txt'"
+    try:
+        print("Starting directory change and file transfer...")
+        ATTNresult = subprocess.run(ATTNcommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        time.sleep(20)
+        if ATTNresult.returncode == 0:
+            print("Operation completed successfully.")
+        else:
+            print("Error during the operation:")
+            print(ATTNresult.stderr)
+            
+    except Exception as e:
+        print(f"Error executing command: {e}")
     #print(ATTNresult)
-    
     data_directory = "/afs/slac.stanford.edu/g/lcls/users/BPM/LCLS_II/Data"
     remote_file = f"laci@cpu-b34-bp01:/data/cpu-b34-bp01/bpm_data/attn_sweep_SN{Serial1}.txt"
-    local_directory = "/afs/slac/g/lcls/users/BPM/LCLS_II/Data"
-    time.sleep(20)
+    local_directory = "."
+    time.sleep(10)
     # Combine commands into a single string
-    command = f"cd {data_directory} && scp -r {remote_file} {local_directory}"
+    command = f"scp -r {remote_file} {data_directory}"
     # Execute the combined command
     try:
         print("Starting directory change and file transfer...")
