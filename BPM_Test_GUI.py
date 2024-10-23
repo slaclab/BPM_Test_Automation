@@ -13,6 +13,7 @@ from PIL import Image, ImageTk
 import vxi11
 import io
 import subprocess
+import testResolution
 
 
 amc_card_inserted = False
@@ -65,8 +66,10 @@ def run_attn():
 def run_fakeBeam():
     update_system_messages(f"Running Fake Beam... Please wait")
     if automatedTest.check_ioc_session("sioc-b084-bp02"):
-        output = automatedTest.fakeBeam_Testing()
-        update_system_messages(f"Fake Beam Testing Result:\n Y-Resolution: {output[0]} um \n X-Resolution: {output[1]} um")
+        output = testResolution.run_resolution()
+        x_res_o = output['res_x'] * 1e3
+        y_res_o = output['res_y'] * 1e3
+        update_system_messages(f"Fake Beam Testing Result:\n Y-Resolution: {y_res_o} um \n X-Resolution: {x_res_o} um")
     else: 
         update_system_messages(f"IOC Not Started, please start IOC")
 
