@@ -15,7 +15,7 @@ def update_system_messages(message):
     # Disable the widget to prevent user input
     system_messages.config(state='disabled')
 
-def run_resolution(slot = 200, nshots=2000, edef='30', attn1_val=6, attn2_val=6, save_to_matfile=False):
+def run_resolution(slot = 200, nshots=2000, edef='30', attn1_val=4, attn2_val=8, save_to_matfile=False):
     """
     Collect BPM data and compute resolutions.
 
