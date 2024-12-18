@@ -10,30 +10,55 @@ import time
 import numpy as np
 
 
-#This function tests the SNR and Power 
-def SNR_Testing(Serial):
-    SNRcommand = "ssh laci@cpu-b34-bp01 'cd /afs/slac/g/lcls/users/BPM/LCLS_II/BPM/software/lcls2-py-scripts/ && ./launch.sh striplineTakeData.py -A0 -B0 -Y stripline_yaml/*_project.yaml/000TopLevel.yaml -D stripline_yaml/*_project.yaml/config/defaults_ss.yaml -b1 -n1 -d /data/cpu-b34-bp01/bpm_data/'"
+def SNR_Testing(Serial, slot=2, bay=1):
+    # Determine the appropriate YAML file based on the slot number
+    if slot == 2:
+        yaml_file = "000TopLevel.yaml"
+    elif slot == 4:
+        yaml_file = "001TopLevel.yaml"
+    elif slot == 5:
+        yaml_file = "002TopLevel.yaml"
+    else:
+        print(f"Invalid slot number: {slot}. Supported slots are 2, 4, 5.")
+        return None
+
+    # Set the bay argument (-b0 or -b1) based on the bay number
+    bay_arg = f"-b{bay}"
+
+    # Construct the command
+    SNRcommand = (
+        f"ssh laci@cpu-b34-bp01 'cd /afs/slac/g/lcls/users/BPM/LCLS_II/BPM/software/lcls2-py-scripts/ && "
+        f"./launch.sh striplineTakeData.py -A0 -B0 -Y stripline_yaml/*_project.yaml/{yaml_file} "
+        f"-D stripline_yaml/*_project.yaml/config/defaults_ss.yaml {bay_arg} -n1 -d /data/cpu-b34-bp01/bpm_data/ --forceReconfig'"
+    )
+
+    # Run the command and capture output
     SNRresult = subprocess.run(SNRcommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     file_pattern = r'\d{8}-\d{6}'
 
     if SNRresult.returncode == 0:
-    # Decode the output and split into lines
+        # Decode the output and split into lines
         output_lines = SNRresult.stdout.decode().splitlines()
-    # print(output_lines)
-    # Get the last line
+        # Get the last line
         last_line = output_lines[-2]
         match = re.search(file_pattern, last_line)
-        extracted_file = match.group()
-        print(extracted_file)
-        SCPcommand = f"scp -r laci@cpu-b34-bp01:/data/cpu-b34-bp01/bpm_data/{extracted_file} ./{Serial}_{extracted_file}"
-        CPYresult = subprocess.run(SCPcommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        if CPYresult.returncode == 0:
-            SNR_PWR_Test_Result = data_processing.calculate_SNR_PWR(Serial, extracted_file)
-            return SNR_PWR_Test_Result
+        if match:
+            extracted_file = match.group()
+            print(extracted_file)
+            SCPcommand = (
+                f"scp -r laci@cpu-b34-bp01:/data/cpu-b34-bp01/bpm_data/{extracted_file} ./{Serial}_{extracted_file}"
+            )
+            CPYresult = subprocess.run(SCPcommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            if CPYresult.returncode == 0:
+                SNR_PWR_Test_Result = data_processing.calculate_SNR_PWR(Serial, extracted_file)
+                return SNR_PWR_Test_Result
+            else:
+                print("Issue encountered copying files, check permissions or try re-logging into your server.")
         else:
-            print("Issue encountered copying files, check permissions or try re-logging into your server.")
+            print("Failed to extract file name from output.")
     else:
-        print('Power and SNR Test Failure! Check board connection or this might be a faulty board.')    
+        print("Power and SNR Test Failure! Check board connection or this might be a faulty board.")
+   
 
 
 # Function to parse the data from the string
@@ -107,43 +132,63 @@ def parse_data_and_plot(filePath):
 
 
 
-def attenuation_Testing(Serial):
-    ATTN_Output = []
-    Serial1 = Serial
-    filename = f"/data/cpu-b34-bp01/bpm_data/attn_sweep_SN{Serial}.txt"
-    ATTNcommand = f"ssh laci@cpu-b34-bp01 'cd /afs/slac/g/lcls/users/BPM/LCLS_II/BPM/software/lcls2-py-scripts/ && ./launch.sh attnsweep_test.py -b1 -s512 -n1 -d /data -Y stripline_yaml/*_project.yaml/000TopLevel.yaml 2>&1 | tee /data/cpu-b34-bp01/bpm_data/attn_sweep_SN{Serial1}.txt'"
-    try:
-        print("Starting directory change and file transfer...")
-        ATTNresult = subprocess.run(ATTNcommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        time.sleep(20)
-        if ATTNresult.returncode == 0:
-            print("Operation completed successfully.")
+def attenuation_Testing(Serial, slot=2, bay=1):
+    # Determine the appropriate YAML file based on the slot number
+    if slot == 2:
+        yaml_file = "000TopLevel.yaml"
+    elif slot == 4:
+        yaml_file = "001TopLevel.yaml"
+    elif slot == 5:
+        yaml_file = "002TopLevel.yaml"
+    else:
+        print(f"Invalid slot number: {slot}. Supported slots are 2, 4, 5.")
+        return None
+
+    # Set the bay argument (-b0 or -b1) based on the bay number
+    bay_arg = f"-b{bay}"
+
+    # Construct the command for attenuation sweep
+    # This command runs the `attnsweep_test.py` script remotely, stores output in /data directory
+    # and tees output to a file named attn_sweep_SN<Serial>.txt.
+    remote_output_file = f"attn_sweep_SN{Serial}.txt"
+    ATTNcommand = (
+        f"ssh laci@cpu-b34-bp01 'cd /afs/slac/g/lcls/users/BPM/LCLS_II/BPM/software/lcls2-py-scripts/ && "
+        f"./launch.sh attnsweep_test.py {bay_arg} -s512 -n1 -d /data "
+        f"-Y stripline_yaml/*_project.yaml/{yaml_file} 2>&1 | tee /data/cpu-b34-bp01/bpm_data/{remote_output_file}'"
+    )
+
+    # Run the attenuation sweep command and capture output
+    ATTNresult = subprocess.run(ATTNcommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+    if ATTNresult.returncode == 0:
+        # Command ran successfully
+        print("Attenuation sweep completed successfully.")
+
+        # Copy the resulting file back locally
+        remote_file_path = f"/data/cpu-b34-bp01/bpm_data/{remote_output_file}"
+        data_directory = "/afs/slac.stanford.edu/g/lcls/users/BPM/LCLS_II/Data"
+        SCPcommand = f"scp -r laci@cpu-b34-bp01:{remote_file_path} {data_directory}"
+
+        # Run SCP command to copy the file
+        CPYresult = subprocess.run(SCPcommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+        if CPYresult.returncode == 0:
+            print("Attenuation sweep file copied successfully.")
+            # Here you could add data processing steps if needed, similar to SNR testing.
+            # For example:
+            # ATTN_Test_Result = data_processing.calculate_attenuation(Serial, remote_output_file)
+            # return ATTN_Test_Result
+            return True
         else:
-            print("Error during the operation:")
-            print(ATTNresult.stderr)
-            
-    except Exception as e:
-        print(f"Error executing command: {e}")
-    #print(ATTNresult)
-    data_directory = "/afs/slac.stanford.edu/g/lcls/users/BPM/LCLS_II/Data"
-    remote_file = f"laci@cpu-b34-bp01:/data/cpu-b34-bp01/bpm_data/attn_sweep_SN{Serial1}.txt"
-    local_directory = "."
-    time.sleep(10)
-    # Combine commands into a single string
-    command = f"scp -r {remote_file} {data_directory}"
-    # Execute the combined command
-    try:
-        print("Starting directory change and file transfer...")
-        result = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-        
-        if result.returncode == 0:
-            print("Operation completed successfully.")
-        else:
-            print("Error during the operation:")
-            print(result.stderr)
-            
-    except Exception as e:
-        print(f"Error executing command: {e}")
+            print("Error encountered copying the attenuation sweep results. Check permissions or server connection.")
+            print(CPYresult.stderr.decode())
+            return None
+    else:
+        # Command failed
+        print("Attenuation sweep test failure! Check the board connection or the integrity of the script.")
+        print(ATTNresult.stderr.decode())
+        return None
+
     
 
 def start_IOC():
