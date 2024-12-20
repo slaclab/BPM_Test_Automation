@@ -120,32 +120,49 @@ def open_attenuation_window():
     button_frame = tk.Frame(attn_window)
     button_frame.pack(pady=10)
 
-    # Define button labels and slots in reversed order
+    # Define button labels and slots
     slot_buttons = [
-        (500, 501),  # Row 1
-        (400, 401),  # Row 2
-        (300, 301),  # Row 3
-        (200, 201),  # Row 4
+        (500, 501),  # Row 1 (slot=5)
+        (400, 401),  # Row 2 (slot=4)
+        (300, 301),  # Row 3 (slot=3)
+        (200, 201),  # Row 4 (slot=2)
     ]
 
-    # Create buttons dynamically
-    def on_attenuation_button_click(slot, bay):
-        update_system_messages(f"Running Attenuation Test on slot {slot}, bay {bay}...")
-        run_attn()  # Modify `run_attn()` to accept slot and bay if needed
+    def call_attenuation_testing(slot_number, bay_number):
+        slot = slot_number // 100
+        bay = bay_number
+        serial = serial_entry.get()
 
+        if not serial:
+            update_system_messages("Missing Serial Number! Please enter Serial Number and confirm.")
+            return
+
+        update_system_messages(f"Running Attenuation Test on slot {slot}, bay {bay}...")
+        output = automatedTest.attenuation_Testing(serial, slot, bay)
+        if output is None:
+            update_system_messages("No Attenuation Test results returned. Check the logs or device connection.")
+            return
+
+        # If needed, parse or display the output here.
+        update_system_messages("Attenuation Test Complete.")
+        automatedTest.parse_data_and_plot(serial)
+
+    # Create buttons dynamically
     for row, (left_slot, right_slot) in enumerate(slot_buttons):
+        # Left button (Bay 1)
         tk.Button(
             button_frame,
-            text=f"{left_slot} (Bay 1)",  # Bay 1 on the left
+            text=f"{left_slot} (Bay 1)",
             width=15,
-            command=lambda s=left_slot, b=1: on_attenuation_button_click(s, b)
+            command=lambda s=left_slot: call_attenuation_testing(s, 1)
         ).grid(row=row, column=0, padx=5, pady=5)
 
+        # Right button (Bay 0)
         tk.Button(
             button_frame,
-            text=f"{right_slot} (Bay 0)",  # Bay 0 on the right
+            text=f"{right_slot} (Bay 0)",
             width=15,
-            command=lambda s=right_slot, b=0: on_attenuation_button_click(s, b)
+            command=lambda s=right_slot: call_attenuation_testing(s, 0)
         ).grid(row=row, column=1, padx=5, pady=5)
 
     # Add a label to display messages in the new window
@@ -155,6 +172,7 @@ def open_attenuation_window():
         font=("Arial", 12)
     )
     display_label.pack(pady=20)
+
 
 
 
