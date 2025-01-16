@@ -48,7 +48,10 @@ def SNR_Testing(Serial, slot=2, bay=1):
             SCPcommand = (
                 f"scp -r laci@cpu-b34-bp01:/data/cpu-b34-bp01/bpm_data/{extracted_file} ./{Serial}_{extracted_file}"
             )
+            SCPcommand2 = (f"scp -r laci@cpu-b34-bp01:/data/cpu-b34-bp01/bpm_data/{extracted_file} /afs/slac.stanford.edu/g/lcls/users/BPM/LCLS_II/Data/{Serial}_{extracted_file}"
+            )
             CPYresult = subprocess.run(SCPcommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            resultCP = subprocess.run(SCPcommand2, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             if CPYresult.returncode == 0:
                 SNR_PWR_Test_Result = data_processing.calculate_SNR_PWR(Serial, extracted_file)
                 return SNR_PWR_Test_Result
